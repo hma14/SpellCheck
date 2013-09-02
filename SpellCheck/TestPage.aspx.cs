@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace SpellCheck
+{
+    public partial class TestPage : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            btnCheckSpelling.Attributes.Add("OnClick", String.Format("{0};this.disabled = true;document.getElementById('spinner').style.display = '';", ClientScript.GetPostBackEventReference(btnCheckSpelling, null)));
+        }
+    }
+}
