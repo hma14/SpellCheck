@@ -5,41 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Spell Checking Test</title>
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js" type="text/javascript"></script>
-    <script type="text/javascript" >
-          //        function displaywaitmsg() {
-          //            var objProgress = document.getElementById("lblProgress");
-          //            if (objProgress != null && objProgress != undefined) {
-          //                objProgress.innerHTML = "Loading...";
-          //            }
-          //        }
-
-//          function init() {
-//              var spinner = document.getElementById("spinner");
-//              spinner.style.display = "";
-//          };
-
-//          $(document).ready(function () {
-
-//              $('#spinner').bind("ajaxSend", function () {
-//                  $(this).show();
-//              }).bind("ajaxComplete", function () {
-//                  $(this).hide();
-//              });
-
-//          });
-
-//          $("#spinner").ajaxStart(function () {
-//              $(this).show();
-//          }).ajaxStop(function () {
-//              $(this).hide();
-//          });
-
-//          $(function () {
-//              init();
-//          });
-
+    <script type="text/javascript">
+        function displaywaitmsg() {
+            var objProgress = document.getElementById("lblProgress");
+            if (objProgress != null && objProgress != undefined) {
+                objProgress.innerHTML = "Loading...";
+            }
+        }
     </script>
     <style type="text/css">
         #tblMain
@@ -103,9 +75,9 @@
 </head>
 <body>
     <form id="form1" runat="server">
-    <div id="wrapper">
+    <div>
         <div id="spinner" class="spinner" style="display: none;" runat="server">
-            <img src="/images/ajax_loader.gif" alt="Loading" class="spinner" />
+            <img src="/images/ajax-loader-large.gif" alt="Loading" class="spinner" />
         </div>
         <table id="tblMain" cellpadding="5" cellspacing="5" runat="server">
             <tr>
@@ -155,9 +127,6 @@
             </tr>
         </table>
     </div>
-    <div class="lblErr">
-        <asp:Label ID="lblError" runat="server" Text=""></asp:Label>
-    </div>
     <asp:HiddenField ID="hfToBeChecked" runat="server" />
     <asp:HiddenField ID="hfCurrentCount" runat="server" />
     <asp:HiddenField ID="hfWordCount" runat="server" />
@@ -168,7 +137,5 @@
     <br />
     <br />
     </form>
-
-  
 </body>
 </html>

@@ -11,7 +11,6 @@ namespace SpellCheck
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            btnCheckSpelling.Attributes.Add("OnClick", String.Format("{0};this.disabled = true;document.getElementById('spinner').style.display = '';", ClientScript.GetPostBackEventReference(btnCheckSpelling, null)));
         }
     }
 }

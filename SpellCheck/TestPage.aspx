@@ -30,20 +30,10 @@
         }
          //-->
     </script>
-    <style>
-        #tbl 
-        {
-            width:600px;
-            border-style:inset;
-        }
-    </style>
 </head>
 <body>
     <form id="frmSpellCheck" name="frmSpellCheck" runat="server">
-    <div id="spinner" class="spinner" style="display: none;" runat="server">
-            <img src="/images/ajax_loader.gif" alt="Loading" class="spinner" />
-        </div>
-    <table id="tbl" >
+    <table cellpadding="5" cellspacing="5" width="600">
         <tr>
             <td>
                 <asp:TextBox ID="tbContent" runat="server" Rows="20" Columns="1" Style="width: 99%"

@@ -22,15 +22,6 @@ namespace SpellCheck {
         protected global::System.Web.UI.HtmlControls.HtmlForm frmSpellCheck;
         
         /// <summary>
-        /// spinner control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl spinner;
-        
-        /// <summary>
         /// tbContent control.
         /// </summary>
         /// <remarks>

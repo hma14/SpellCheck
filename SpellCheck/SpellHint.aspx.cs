@@ -46,9 +46,14 @@ namespace SpellCheck
                 hfFinal.Value = Server.UrlDecode(Request.QueryString["content"]);
                 hfToBeChecked.Value = Request.QueryString["content"];
 
+                // ClientScript.GetPostBackEventReference returns a string that can be used 
+                // in a client event to cause postback to the server. 
+                // The reference string is defined by the specified Control object 
+                // ex: ClientScript.GetPostBackEventReference(Control)
+
                 btnNext.Attributes.Add("OnClick", 
-                    String.Format("{0};this.disabled = true;document.getElementById('spinner').style.display = '';", 
-                    ClientScript.GetPostBackEventReference(btnNext, null)));
+                        String.Format("{0};this.disabled = true;document.getElementById('spinner').style.display = \"\";",
+                        ClientScript.GetPostBackEventReference(btnNext, null)));
 
                 //Regex rgx = new Regex(@"\W+"); 
                 Regex rgx = new Regex("[,.;?!-=\"\'`]");
@@ -75,15 +80,8 @@ namespace SpellCheck
                 hfWordCount.Value = iWordCount.ToString();
                 hfErrors.Value = "0";
 
-               
-                // If word contains non-alphabet characters, do nothing 
-                if (PrepForSpellCheck(arrWords[iCurrentCount]) == false)
-                {
-                    btnNext_Click(sender, e);
-                }
-
                 // check the current word and if invalid, suggest alternatives
-                tbCurrentWord.Text = arrWords[iCurrentCount];
+                tbCurrentWord.Text = arrWords[iCurrentCount]; 
                 string beginOfString = arrWords[iCurrentCount].Substring(0, 1).ToLower();
                 Regex reg = new Regex(@"^[a-z]+$");
                 if (reg.IsMatch(beginOfString))
@@ -95,8 +93,14 @@ namespace SpellCheck
                     btnNext_Click(sender, e);
                 }
 
+
+                // Keep moving to the next
+                if (PrepForSpellCheck(arrWords[iCurrentCount]) == false)
+                {
+                    btnNext_Click(sender, e);
+                }                
                 // For invalid characters appared inside a word, just move on
-                if (SpellCheck(arrWords[iCurrentCount]) == true)
+                else if (SpellCheck(arrWords[iCurrentCount]) == true)
                 {
                     btnNext_Click(sender, e);
                 }
@@ -156,16 +160,17 @@ namespace SpellCheck
 
             iCurrentCount = int.Parse(hfCurrentCount.Value);
             iCurrentCount++;
+            hfCurrentCount.Value = iCurrentCount.ToString();
+            arrWords = hfToBeChecked.Value.Split();
+
             // If we've checked all the words in the original text
             if (iCurrentCount == iWordCount)
             {
-                // Notify the user, copy modified content back to the parent textbox
-                // and close the spell check window
+                // Notify the user and close the spell check window
                 finishedChecking(hfFinal.Value);
                 return;
             }
-            hfCurrentCount.Value = iCurrentCount.ToString();
-            arrWords = hfToBeChecked.Value.Split();
+
             tbCurrentWord.Text = arrWords[iCurrentCount];
             string beginOfString = arrWords[iCurrentCount].Substring(0, 1).ToLower();
             Regex reg = new Regex(@"^[a-z]+$");
@@ -183,7 +188,7 @@ namespace SpellCheck
                 btnNext_Click(sender, e);
             }
             else if (SpellCheck(arrWords[iCurrentCount]) == true)
-            {              
+            {
                 btnNext_Click(sender, e);
             }
 #if false
@@ -209,7 +214,15 @@ namespace SpellCheck
 
                 // select the original item in the list by default
                 lbHint.SelectedIndex = 0;
-            }                    
+            }         
+
+            // If we've checked all the words in the original text
+            if (iCurrentCount == iWordCount)
+            {
+                // Notify the user and close the spell check window
+                finishedChecking(hfFinal.Value);
+            }
+            
         }
         #endregion
 
@@ -293,8 +306,7 @@ namespace SpellCheck
             if (strText.Contains("\""))
                 strText = strText.Replace("\"", "\\\"");
 
-            strText = strText.Replace("\r", "\\r");
-            strText = strText.Replace("\n", "\\n");
+            strText = strText.Replace("\r\n", "\\r\\n");
 
             // Insert the onload javascript to alert the user that the check has completed
             // and update the source textbox and close the spellchecker window
@@ -323,8 +335,7 @@ namespace SpellCheck
             if (strText.Contains("\""))
                 strText = strText.Replace("\"", "\\\"");
 
-            strText = strText.Replace("\r", "\\r");
-            strText = strText.Replace("\n", "\\n");
+            strText = strText.Replace("\r\n", "\\r\\n");
 
             // Insert the onload javascript to alert the user that the check has completed
             // and update the source textbox and close the spellchecker window
@@ -332,7 +343,9 @@ namespace SpellCheck
             sbJS.Append("<script language=\"javascript\" type=\"text/javascript\">");
             sbJS.Append("alert(\"The spell check has completed successfully (" + intErrors + " error(s) found).\");");
             sbJS.Append("window.opener.document.getElementById('" + hfParentTextBoxId.Value + "').value = \"" + strText + "\";");
-            sbJS.Append("window.opener.document.getElementById('" + hfParentButtonId.Value + "').disabled = false;");            
+            sbJS.Append("window.opener.document.getElementById('" + hfParentButtonId.Value + "').disabled = false;");
+            //sbJS.Append("window.opener.document.forms[\"" + strFormName + "\"].elements[\"" + strTextboxName + "\"].value = \"" + strText + "\";");
+            //sbJS.Append("window.opener.document.forms[\"" + strFormName + "\"].btnCheckSpelling.disabled = false;");
             sbJS.Append("self.close();");
             sbJS.Append("</script>");
 
@@ -383,28 +396,24 @@ namespace SpellCheck
             string strFinal = string.Empty;
             string root = Server.MapPath(".");
             string firstChar = string.Empty;
-            try
+            if (dicStringBool != null)
             {
-                using (StreamReader srDictionary = new StreamReader(root + @"/En_Dictionary/" + strBegin + "_dic.txt"))
-                {
-                    while (srDictionary.Peek() > -1)
-                    {
-                        strFinal += srDictionary.ReadLine() + '\n';
-                    }
-                    srDictionary.Close();
-                    strDicArray = strFinal.Split('\n');
-
-                    dicStringBool = new Dictionary<string, bool>();
-                    for (int i = 0; i < strDicArray.Length; i++)
-                    {
-                        dicStringBool[strDicArray[i].ToLower()] = true;
-                    }
-                }
+                dicStringBool.Clear();
             }
-            catch (Exception e)
+            else
             {
-                lblError.Text = string.Format("The process failed: {0}\n{1}", e.ToString(), e.Message);               
+                dicStringBool = new Dictionary<string, bool>();
             }
+            StreamReader srDictionary = new StreamReader(root + @"/En_Dictionary/" + strBegin.ToLower() + "_dic.txt");
+            while (srDictionary.Peek() != -1)
+            {
+                string word = srDictionary.ReadLine().Trim();
+                strFinal += word + '\n';
+                dicStringBool[word.ToLower()] = true;
+            }
+            srDictionary.Close();
+            strDicArray = strFinal.Split('\n');
+           
         }
 #endif
         #endregion
@@ -419,18 +428,17 @@ namespace SpellCheck
         private bool PrepForSpellCheck(string strWord)
         {
             const string strValidChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            Dictionary<char, bool> dic = new Dictionary<char, bool>();
+            Dictionary<char, bool> dic = new Dictionary<char,bool>();
 
             for (int i = 0; i < strValidChars.Length; i++)
             {
                 dic[strValidChars[i]] = true;
             }
 
-            
             for (int i = 0; i < strWord.Length; i++)
             {
                 try
-                {                  
+                {
                     if (dic[strWord[i]] == true) continue;
                 }
                 catch
@@ -462,7 +470,8 @@ namespace SpellCheck
         /// <param name="strWord">Given word</param>
         /// <returns>Array of suggested words</returns>
         private string[] Suggest(string strWord)
-        {            
+        {
+            
             string strSuggestions = string.Empty;
             int intMaxSuggestions = 10;
             int intSuggestionCount = 0;
@@ -472,9 +481,18 @@ namespace SpellCheck
             string strSoundex = Soundex(strWord);
 
             int i = 0;
+            while ((strDicArray[i].Length > 0) && (i < strDicArray.Length))
+            {
+                if (strDicArray[i].Substring(0, 1).ToLower() != strWord.Substring(0, 1).ToLower())  
+                    i++;
+                else
+                    break;
+            }
+            i = 0;
             do
             {
-                if (strDicArray[i].Length > 0)
+                if ((strDicArray[i].Length > 0) && 
+                    (strDicArray[i].Substring(0, 1).ToLower() == strWord.Substring(0, 1).ToLower()))
                 {
                     if (Soundex(strDicArray[i]) == strSoundex)
                     {
@@ -487,7 +505,6 @@ namespace SpellCheck
                 }
                 else
                     break;
-               
             } while (i < strDicArray.Length);
 
             string [] SuggestArray = strSuggestions.Split('|');
@@ -543,7 +560,6 @@ namespace SpellCheck
             string strCode;
             string strSoundex;
 
-            
             strSoundex = strString.Substring(0, 1).ToUpper();
             for (int i = 1; i < strString.Length; i++)
             {
@@ -666,7 +682,7 @@ namespace SpellCheck
         }
         #endregion
 
-        #region replaceFirst
+        #region
         /// <summary>
         /// Replace first occurrence of a word in a string
         /// </summary>
@@ -714,5 +730,7 @@ namespace SpellCheck
         }
 
         #endregion
+
+
     }
 }
